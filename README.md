@@ -95,11 +95,7 @@ The evaluation writes `evaluation/REPORT.md`. Red-team cases are judged by what 
 | Average response time | 4322 ms |
 | Cases affected by AI service errors | 0 |
 
-## Deploy
 
-A `Dockerfile` and `render.yaml` are included. On Render: create a new Blueprint from this repository, set `GROQ_API_KEY` when prompted, and deploy. `JWT_SECRET` is generated automatically. The free tier sleeps when idle and resets its database on restart, which is fine for a demo.
-
-Before using this for anything real, remove the demo accounts block from `static/index.html` and replace the seeded users.
 
 ## Limitations
 
