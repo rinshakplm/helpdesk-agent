@@ -1,0 +1,9 @@
+.env
+data/
+__pycache__/
+*.pyc
+*.db
+.pytest_cache/
+test_key.py
+list_models.py
+.vscode/

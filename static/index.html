@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nimbus IT Helpdesk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Design tokens ---------- */
+:root {
+  --page: #eef1f7;
+  --surface: #ffffff;
+  --raised: #f6f8fc;
+  --ink: #172036;
+  --slate: #56637f;
+  --line: #d9dfec;
+  --signal: #3d4fe0;
+  --signal-ink: #ffffff;
+  --allowed: #17805a;
+  --verify: #6b4fd8;
+  --approval: #a8620b;
+  --blocked: #b8322f;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0e1424; --surface: #151d33; --raised: #1b2542; --ink: #e8ecf8; --slate: #9aa6c4;
+    --line: #28345a; --signal: #8b98ff; --signal-ink: #0e1424;
+    --allowed: #4cc79a; --verify: #a99bff; --approval: #e8a64e; --blocked: #ff7b76;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0e1424; --surface: #151d33; --raised: #1b2542; --ink: #e8ecf8; --slate: #9aa6c4;
+  --line: #28345a; --signal: #8b98ff; --signal-ink: #0e1424;
+  --allowed: #4cc79a; --verify: #a99bff; --approval: #e8a64e; --blocked: #ff7b76;
+  color-scheme: dark;
+}
+
+/* ---------- Base ---------- */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { font-family: var(--font-body); font-size: 15px; line-height: 1.55; color: var(--ink); background: var(--page); }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01em; }
+
+.btn { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 14px; font-weight: 500; }
+.btn:hover { background: var(--raised); }
+.btn-primary { background: var(--signal); color: var(--signal-ink); border-color: transparent; font-weight: 600; }
+.btn-primary:hover { background: var(--signal); filter: brightness(1.08); }
+.icon-btn { width: 38px; height: 38px; display: inline-grid; place-items: center; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--slate); }
+.icon-btn:hover { background: var(--raised); color: var(--ink); }
+.icon-btn svg { width: 19px; height: 19px; }
+
+/* ---------- Sign-in ---------- */
+.login { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
+.login-brand { padding: 56px 56px 40px; display: flex; flex-direction: column; justify-content: space-between; background: var(--signal); color: var(--signal-ink); }
+.brand-row { white-space: nowrap; display: flex; align-items: center; gap: 12px; font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+.brand-row svg { width: 30px; height: 30px; }
+.login-brand h1 { font-size: clamp(34px, 4.2vw, 52px); line-height: 1.04; max-width: 14ch; }
+.login-brand p { max-width: 42ch; font-size: 17px; opacity: .88; margin: 18px 0 0; }
+.login-note { font-size: 14px; opacity: .8; max-width: 46ch; }
+.login-form-wrap { display: grid; place-items: center; padding: 40px 24px; }
+.login-card { width: 100%; max-width: 400px; }
+.login-card h2 { font-size: 26px; margin-bottom: 6px; }
+.login-card .sub { color: var(--slate); margin: 0 0 24px; }
+.field { display: block; margin-bottom: 16px; }
+.field span { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.field input { width: 100%; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.login-error { color: var(--blocked); font-size: 14px; min-height: 22px; margin: 0 0 8px; }
+.login-card .btn-primary { width: 100%; padding: 12px; font-size: 16px; border-radius: 12px; }
+.demo { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
+.demo h3 { font-size: 15px; margin-bottom: 4px; }
+.demo p { margin: 0 0 12px; color: var(--slate); font-size: 13.5px; }
+.demo-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.demo-list button { text-align: left; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.demo-list button:hover { border-color: var(--signal); }
+.demo-list b { display: block; font-size: 14px; }
+.demo-list small { color: var(--slate); font-size: 12.5px; }
+
+/* ---------- App shell ---------- */
+.app { display: grid; height: 100dvh; grid-template-columns: 276px minmax(0, 1fr) 328px; grid-template-rows: 60px auto minmax(0, 1fr); }
+.topbar { grid-row: 1; }
+.subnav { grid-row: 2; }
+.rail, .chat, .page { grid-row: 3; }
+.topbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.topbar .brand-row { color: var(--ink); font-size: 18px; }
+.topbar .brand-row svg { color: var(--signal); }
+.spacer { flex: 1; }
+.who { text-align: right; line-height: 1.25; }
+.who b { display: block; font-size: 14px; }
+.who small { color: var(--slate); font-size: 12.5px; }
+.only-small { display: none; }
+
+.rail { background: var(--surface); overflow-y: auto; padding: 20px 16px; }
+.rail-left { border-right: 1px solid var(--line); }
+.rail-right { border-left: 1px solid var(--line); background: var(--raised); }
+.rail h2 { font-size: 15px; margin-bottom: 4px; }
+.rail .hint { margin: 0 0 12px; color: var(--slate); font-size: 13px; }
+.rail section + section { margin-top: 26px; }
+
+.suggest { display: flex; flex-direction: column; gap: 8px; }
+.suggest button { text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.suggest button:hover { border-color: var(--signal); background: var(--raised); }
+
+.tickets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ticket { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.ticket-top { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 13.5px; }
+.ticket p { margin: 4px 0 6px; font-size: 13.5px; color: var(--slate); overflow-wrap: anywhere; }
+.pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--raised); color: var(--slate); }
+.pill.high { background: color-mix(in srgb, var(--blocked) 14%, transparent); color: var(--blocked); }
+.empty-note { color: var(--slate); font-size: 13.5px; }
+
+/* ---------- Chat ---------- */
+.chat { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.thread { flex: 1; overflow-y: auto; padding: 28px 24px 12px; }
+.thread-inner { max-width: 740px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+.welcome { margin: 6vh auto 0; max-width: 560px; text-align: left; }
+.welcome h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.08; margin-bottom: 12px; }
+.welcome p { color: var(--slate); font-size: 16px; margin: 0; }
+
+.msg { display: flex; gap: 12px; max-width: 100%; }
+.msg.user { justify-content: flex-end; }
+.avatar { flex: none; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--signal); color: var(--signal-ink); }
+.avatar svg { width: 18px; height: 18px; }
+.bubble { min-width: 0; max-width: 68ch; }
+.msg.user .bubble { background: var(--signal); color: var(--signal-ink); padding: 10px 15px; border-radius: 16px 16px 4px 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.bot .bubble { background: var(--surface); border: 1px solid var(--line); padding: 12px 16px; border-radius: 4px 16px 16px 16px; overflow-wrap: anywhere; }
+.bubble p { margin: 0 0 8px; }
+.bubble p:last-child, .bubble ul:last-child, .bubble ol:last-child { margin-bottom: 0; }
+.bubble ul, .bubble ol { margin: 0 0 8px; padding-left: 22px; }
+.bubble li { margin: 2px 0; }
+.bubble code { background: var(--raised); padding: 1px 6px; border-radius: 6px; font-size: 13.5px; }
+.cite { display: inline-block; padding: 0 7px; border-radius: 6px; font-size: 12.5px; font-weight: 600; background: color-mix(in srgb, var(--signal) 14%, transparent); color: var(--signal); }
+.meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--slate); font-size: 12.5px; }
+.badge { padding: 1px 9px; border-radius: 999px; font-weight: 600; font-size: 12px; background: color-mix(in srgb, var(--approval) 16%, transparent); color: var(--approval); }
+.typing { display: inline-flex; gap: 4px; padding: 4px 0; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--slate); animation: pulse 1.2s infinite ease-in-out; }
+.typing i:nth-child(2) { animation-delay: .15s; }
+.typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes pulse { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.caret { display: inline-block; width: 7px; height: 1.05em; margin-left: 2px; vertical-align: text-bottom; background: var(--signal); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .typing i, .caret { animation: none; } }
+
+.composer-wrap { padding: 8px 24px 18px; }
+.composer { max-width: 740px; margin: 0 auto; display: flex; align-items: flex-end; gap: 10px; padding: 8px 8px 8px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; }
+.composer:focus-within { border-color: var(--signal); }
+.composer textarea { flex: 1; resize: none; border: 0; outline: 0; background: transparent; padding: 8px 0; max-height: 160px; line-height: 1.45; }
+.composer .btn-primary { border-radius: 12px; padding: 9px 18px; }
+.composer-foot { max-width: 740px; margin: 6px auto 0; display: flex; justify-content: space-between; color: var(--slate); font-size: 12.5px; padding: 0 6px; }
+.composer-foot .over { color: var(--blocked); font-weight: 600; }
+
+/* ---------- Agent activity ---------- */
+.turn { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.turn + .turn { margin-top: 12px; }
+.turn-title { font-weight: 600; font-size: 13.5px; margin-bottom: 8px; overflow-wrap: anywhere; }
+.turn h3 { font-size: 13px; color: var(--slate); font-family: var(--font-body); font-weight: 600; margin: 10px 0 6px; }
+.src { font-size: 13px; padding: 6px 0; border-top: 1px solid var(--line); }
+.src:first-of-type { border-top: 0; }
+.src b { color: var(--signal); }
+.src span { display: block; color: var(--slate); }
+.gate { display: grid; grid-template-columns: 10px 1fr; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.gate:first-of-type { border-top: 0; }
+.dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; background: var(--slate); }
+.dot.allow { background: var(--allowed); } .dot.needs_verification { background: var(--verify); }
+.dot.needs_approval { background: var(--approval); } .dot.refuse { background: var(--blocked); }
+.gate b { display: block; }
+.gate .verdict { font-weight: 600; }
+.gate .verdict.allow { color: var(--allowed); } .gate .verdict.needs_verification { color: var(--verify); }
+.gate .verdict.needs_approval { color: var(--approval); } .gate .verdict.refuse { color: var(--blocked); }
+.gate small { color: var(--slate); display: block; }
+
+/* ---------- Small screens ---------- */
+.scrim { display: none; }
+@media (max-width: 1100px) {
+  .app { grid-template-columns: 252px minmax(0, 1fr); }
+  .rail-right { position: fixed; z-index: 30; top: 60px; right: 0; bottom: 0; width: min(340px, 92vw); transform: translateX(100%); transition: transform .2s; }
+  .rail-right.open { transform: none; }
+  .only-small.activity-btn { display: inline-grid; }
+  .scrim.on { display: block; position: fixed; inset: 60px 0 0 0; background: rgba(8, 12, 24, .45); z-index: 20; }
+}
+@media (max-width: 800px) {
+  .login { grid-template-columns: 1fr; }
+  .login-brand { padding: 28px 24px; gap: 28px; }
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .rail-left { position: fixed; z-index: 30; top: 60px; left: 0; bottom: 0; width: min(300px, 88vw); transform: translateX(-100%); transition: transform .2s; }
+  .rail-left.open { transform: none; }
+  .only-small { display: inline-grid; }
+  .who { display: none; }
+  .thread { padding: 20px 14px 8px; }
+  .composer-wrap { padding: 8px 14px 14px; }
+}
+@media (max-width: 520px) {
+  .topbar { padding: 0 10px; gap: 6px; }
+  .topbar .brand-text { display: none; }
+  .topbar .btn { padding: 7px 11px; }
+}
+@media (prefers-reduced-motion: reduce) { .rail-left, .rail-right { transition: none; } }
+
+/* ---------- Views: navigation and pages ---------- */
+.subnav { grid-column: 1 / -1; display: flex; gap: 4px; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { border: 0; background: transparent; padding: 11px 14px; font-weight: 500; color: var(--slate); border-bottom: 2px solid transparent; display: inline-flex; gap: 8px; align-items: center; white-space: nowrap; }
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] { color: var(--ink); border-bottom-color: var(--signal); font-weight: 600; }
+.count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--approval); color: #fff; font-size: 12px; font-weight: 700; display: inline-grid; place-items: center; }
+.page { grid-column: 1 / -1; overflow-y: auto; padding: 28px 24px 48px; }
+.page-inner { max-width: 1080px; margin: 0 auto; }
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
+.page-head h2 { font-size: 28px; }
+.page-head p { margin: 4px 0 0; color: var(--slate); max-width: 60ch; }
+.app:not([data-view="chat"]) .rail, .app:not([data-view="chat"]) .chat { display: none; }
+.app[data-view="chat"] .page { display: none; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 7px 14px; font-weight: 500; color: var(--slate); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--signal); color: var(--signal-ink); font-weight: 600; }
+
+/* approvals */
+.cards { display: flex; flex-direction: column; gap: 14px; }
+.acard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.acard-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; }
+.acard h3 { font-size: 18px; }
+.acard .who-line { color: var(--slate); font-size: 13.5px; }
+.acard .reason { margin: 10px 0 12px; padding-left: 12px; border-left: 3px solid var(--line); color: var(--ink); overflow-wrap: anywhere; }
+.steps { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+.step { padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--raised); font-size: 13.5px; }
+.step b { display: block; text-transform: capitalize; }
+.step span { color: var(--slate); }
+.step.approved { border-color: color-mix(in srgb, var(--allowed) 55%, var(--line)); }
+.step.approved b { color: var(--allowed); }
+.step.rejected { border-color: color-mix(in srgb, var(--blocked) 55%, var(--line)); }
+.step.rejected b { color: var(--blocked); }
+.step.waiting, .step.closed { opacity: .72; }
+.decide { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 10px; }
+.decide input { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.decide-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.decide-row small { color: var(--slate); font-weight: 600; margin-right: 4px; text-transform: capitalize; }
+.btn-danger { color: var(--blocked); }
+.card-error { color: var(--blocked); font-size: 13.5px; margin: 0; }
+.status-pill { padding: 2px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: var(--raised); color: var(--slate); }
+.status-pill.approved { background: color-mix(in srgb, var(--allowed) 15%, transparent); color: var(--allowed); }
+.status-pill.rejected { background: color-mix(in srgb, var(--blocked) 15%, transparent); color: var(--blocked); }
+.status-pill.pending { background: color-mix(in srgb, var(--approval) 16%, transparent); color: var(--approval); }
+
+/* dashboard */
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.kpi span { display: block; color: var(--slate); font-size: 13.5px; }
+.kpi strong { display: block; font-family: var(--font-display); font-size: 30px; line-height: 1.15; margin: 2px 0; }
+.kpi small { color: var(--slate); font-size: 12.5px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; min-width: 0; }
+.panel h3 { font-size: 16px; margin-bottom: 2px; }
+.panel .hint { margin: 0 0 14px; color: var(--slate); font-size: 13px; }
+.bars { display: flex; align-items: flex-end; gap: 6px; height: 150px; }
+.bar-col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 4px; }
+.bar { width: 100%; background: var(--signal); border-radius: 6px 6px 2px 2px; min-height: 3px; opacity: .9; }
+.bar-col small { font-size: 11.5px; color: var(--slate); white-space: nowrap; }
+.bar-col em { font-style: normal; font-size: 12px; font-weight: 600; }
+.stack { display: flex; height: 16px; border-radius: 999px; overflow: hidden; background: var(--raised); margin-bottom: 12px; }
+.stack i { display: block; height: 100%; }
+.legend { display: grid; gap: 6px; font-size: 13.5px; }
+.legend div { display: flex; align-items: center; gap: 8px; }
+.legend .dot { margin: 0; flex: none; }
+.legend b { margin-left: auto; }
+.rank { display: grid; gap: 10px; }
+.rank-row { font-size: 13.5px; }
+.rank-row div:first-child { display: flex; justify-content: space-between; gap: 8px; }
+.rank-row .track { height: 7px; border-radius: 999px; background: var(--raised); margin-top: 4px; overflow: hidden; }
+.rank-row .fill { height: 100%; background: var(--signal); border-radius: 999px; }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; color: var(--slate); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+tr:last-child td { border-bottom: 0; }
+select { padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+.muted { color: var(--slate); }
+.audit-sum small { display: block; color: var(--slate); }
+.event { font-weight: 600; white-space: nowrap; }
+.filter-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+@media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid2 { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .kpis { grid-template-columns: 1fr; } .page { padding: 20px 14px 40px; } .page-head h2 { font-size: 24px; } }
+</style>
+</head>
+<body>
+
+<!-- ===== Sign-in ===== -->
+<section id="login" class="login" hidden>
+  <div class="login-brand">
+    <div class="brand-row">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 3 5 7v8c0 7 4.6 12.2 11 14 6.4-1.8 11-7 11-14V7L16 3Z" fill="currentColor" opacity=".25"/><path d="M16 3 5 7v8c0 7 4.6 12.2 11 14 6.4-1.8 11-7 11-14V7L16 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m11 16 3.5 3.5L21.5 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Nimbus IT Helpdesk
+    </div>
+    <div>
+      <h1>IT help that follows company policy.</h1>
+      <p>Ask about passwords, VPN, access or suspicious emails. Answers come from Nimbus Tech's own policies, and every sensitive action is checked by rules before it happens.</p>
+    </div>
+    <div class="login-note">Demo system with fictional policies and fake accounts.</div>
+  </div>
+  <div class="login-form-wrap">
+    <form class="login-card" id="login-form" autocomplete="off">
+      <h2>Sign in</h2>
+      <p class="sub">Use your employee ID and password.</p>
+      <label class="field"><span>Employee ID</span><input id="emp" name="emp" required maxlength="20" autocapitalize="characters" spellcheck="false"></label>
+      <label class="field"><span>Password</span><input id="pw" name="pw" type="password" required maxlength="200"></label>
+      <p class="login-error" id="login-error" role="alert"></p>
+      <button class="btn btn-primary" type="submit" id="login-btn">Sign in</button>
+      <div class="demo">
+        <h3>Demo accounts</h3>
+        <p>Select one to fill in the form. Remove this block before a real deployment.</p>
+        <div class="demo-list" id="demo-list">
+          <button type="button" data-emp="EMP001"><b>Asha Nair</b><small>Employee</small></button>
+          <button type="button" data-emp="EMP002"><b>Ravi Kumar</b><small>Employee</small></button>
+          <button type="button" data-emp="MGR001"><b>Meera Iyer</b><small>Manager</small></button>
+          <button type="button" data-emp="ADM001"><b>Karthik Rao</b><small>IT admin</small></button>
+          <button type="button" data-emp="ADM002"><b>Divya Menon</b><small>IT admin</small></button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ===== App ===== -->
+<div id="app" class="app" hidden>
+  <header class="topbar">
+    <button class="icon-btn only-small" id="menu-btn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="brand-row">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 3 5 7v8c0 7 4.6 12.2 11 14 6.4-1.8 11-7 11-14V7L16 3Z" fill="currentColor" opacity=".2"/><path d="M16 3 5 7v8c0 7 4.6 12.2 11 14 6.4-1.8 11-7 11-14V7L16 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m11 16 3.5 3.5L21.5 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="brand-text">Nimbus IT Helpdesk</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="who"><b id="who-name"></b><small id="who-role"></small></div>
+    <button class="icon-btn only-small activity-btn" id="activity-btn" aria-label="Show agent activity">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+    </button>
+    <button class="icon-btn" id="theme-btn" aria-label="Switch light or dark theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13.5A8.5 8.5 0 1 1 10.5 3a7 7 0 0 0 10.5 10.5Z"/></svg>
+    </button>
+    <button class="btn" id="signout-btn">Sign out</button>
+  </header>
+  <nav class="subnav" id="subnav" aria-label="Sections" hidden></nav>
+
+  <aside class="rail rail-left" id="rail-left">
+    <section>
+      <h2>Common requests</h2>
+      <p class="hint">Select one to send it.</p>
+      <div class="suggest" id="suggest"></div>
+    </section>
+    <section>
+      <h2 id="tickets-title">My tickets</h2>
+      <p class="hint" id="tickets-hint">Tickets the agent creates for you appear here.</p>
+      <ul class="tickets" id="tickets"></ul>
+    </section>
+  </aside>
+
+  <main class="chat">
+    <div class="thread" id="thread" aria-live="polite">
+      <div class="thread-inner" id="thread-inner">
+        <div class="welcome" id="welcome">
+          <h2>What do you need help with?</h2>
+          <p>Describe the problem in your own words. The agent looks up Nimbus Tech's policies, answers from them, and can raise tickets or start a reset for you.</p>
+        </div>
+      </div>
+    </div>
+    <div class="composer-wrap">
+      <form class="composer" id="composer">
+        <textarea id="input" rows="1" maxlength="2000" placeholder="Type your question" aria-label="Message"></textarea>
+        <button class="btn btn-primary" id="send-btn" type="submit">Send</button>
+      </form>
+      <div class="composer-foot"><span>Enter to send, Shift and Enter for a new line</span><span id="counter"></span></div>
+    </div>
+  </main>
+
+  <section class="page" id="page-approvals" hidden>
+    <div class="page-inner">
+      <div class="page-head">
+        <div><h2>Access approvals</h2><p id="approvals-sub"></p></div>
+        <div class="seg" id="approvals-seg"><button type="button" data-tab="waiting" aria-pressed="true">Waiting for you</button><button type="button" data-tab="history" aria-pressed="false">History</button></div>
+      </div>
+      <div class="cards" id="approvals-list"></div>
+    </div>
+  </section>
+
+  <section class="page" id="page-dashboard" hidden>
+    <div class="page-inner">
+      <div class="page-head">
+        <div><h2>Dashboard</h2><p>How the agent is performing, worked out from the audit log.</p></div>
+        <div class="seg" id="dash-seg"><button type="button" data-days="1" aria-pressed="false">24 hours</button><button type="button" data-days="7" aria-pressed="true">7 days</button><button type="button" data-days="30" aria-pressed="false">30 days</button><button type="button" data-days="0" aria-pressed="false">All time</button></div>
+      </div>
+      <div id="dash-body"></div>
+    </div>
+  </section>
+
+  <section class="page" id="page-audit" hidden>
+    <div class="page-inner">
+      <div class="page-head">
+        <div><h2>Audit log</h2><p>Every login, message, rule decision and approval, newest first.</p></div>
+        <div class="filter-row"><label class="muted" for="audit-filter">Show</label>
+          <select id="audit-filter"><option value="all">Everything</option><option value="chat">Conversations</option><option value="action">Rule decisions</option><option value="approval">Approvals</option><option value="login">Sign-ins</option><option value="problem">Problems</option></select>
+          <button class="btn" type="button" id="audit-refresh">Refresh</button></div>
+      </div>
+      <div class="panel"><div class="tablewrap" id="audit-body"></div></div>
+    </div>
+  </section>
+
+  <aside class="rail rail-right" id="rail-right">
+    <h2>Agent activity</h2>
+    <p class="hint">What the agent checked, and what the rules decided, for each message.</p>
+    <div id="activity"><p class="empty-note">Nothing yet. Send a message to see the policies it used and the rule decisions.</p></div>
+  </aside>
+</div>
+<div class="scrim" id="scrim"></div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const TOKEN_KEY = "nimbus_token";
+const MAX_CHARS = 1000;
+const sessionId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())).slice(0, 36);
+let token = sessionStorage.getItem(TOKEN_KEY);
+let me = null;
+let busy = false;
+let controller = null;
+let turns = [];
+
+const ACTION_NAMES = {
+  reset_password: "Password reset", create_ticket: "Create ticket", check_ticket_status: "Check ticket",
+  report_phishing: "Phishing report", request_access: "Access request", escalate_to_human: "Hand over to a person",
+};
+const VERDICT_NAMES = {
+  allow: "Allowed", needs_verification: "Verification needed", needs_approval: "Sent for approval", refuse: "Blocked",
+};
+const SUGGESTIONS = [
+  "I forgot my password",
+  "My VPN keeps disconnecting",
+  "I got a suspicious email asking for my password",
+  "I need access to the marketing shared drive",
+  "My laptop was stolen",
+];
+const ROLE_NAMES = { employee: "Employee", manager: "Manager", it_admin: "IT admin" };
+
+/* ---------- Safe text rendering: escape first, then add a little formatting ---------- */
+function esc(s) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function inline(s) {
+  return s
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[(KB-\d{3})\]/g, '<span class="cite">$1</span>');
+}
+function render(md) {
+  let html = "", list = null;
+  const close = () => { if (list) { html += `</${list}>`; list = null; } };
+  for (const raw of esc(md).split("\n")) {
+    const line = raw.trimEnd();
+    let m;
+    if ((m = line.match(/^\s*[-*]\s+(.*)/))) { if (list !== "ul") { close(); html += "<ul>"; list = "ul"; } html += `<li>${inline(m[1])}</li>`; }
+    else if ((m = line.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== "ol") { close(); html += "<ol>"; list = "ol"; } html += `<li>${inline(m[1])}</li>`; }
+    else if ((m = line.match(/^#{1,4}\s+(.*)/))) { close(); html += `<p><strong>${inline(m[1])}</strong></p>`; }
+    else if (line === "") { close(); }
+    else { close(); html += `<p>${inline(line)}</p>`; }
+  }
+  close();
+  return html;
+}
+
+/* ---------- Views ---------- */
+function showLogin(message) {
+  $("app").hidden = true;
+  $("login").hidden = false;
+  $("login-error").textContent = message || "";
+  $("emp").focus();
+}
+function showApp() {
+  $("login").hidden = true;
+  $("app").hidden = false;
+  $("who-name").textContent = me.name;
+  $("who-role").textContent = `${ROLE_NAMES[me.role] || me.role}, ${me.employee_id}`;
+  const admin = me.role === "it_admin";
+  $("tickets-title").textContent = admin ? "All tickets" : "My tickets";
+  $("tickets-hint").textContent = admin ? "Every open ticket across the company." : "Tickets the agent creates for you appear here.";
+  buildNav();
+  setView("chat");
+  loadTickets();
+  refreshApprovalCount();
+}
+function signOut(message) {
+  sessionStorage.removeItem(TOKEN_KEY);
+  token = null; me = null; turns = [];
+  view = "chat";
+  $("app").dataset.view = "chat";
+  $("subnav").hidden = true;
+  const welcome = $("welcome"); // grab it before the thread is cleared, or it can no longer be found
+  $("thread-inner").innerHTML = "";
+  $("thread-inner").appendChild(welcome);
+  welcome.hidden = false;
+  renderActivity();
+  showLogin(message);
+}
+
+/* ---------- API ---------- */
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(token ? { Authorization: "Bearer " + token } : {}), ...(options.headers || {}) },
+  });
+  return res;
+}
+async function errorText(res) {
+  try {
+    const d = (await res.json()).detail;
+    if (typeof d === "string") return d;
+  } catch (e) { /* ignore */ }
+  return "That request could not be completed.";
+}
+
+async function loadTickets() {
+  try {
+    const res = await api("/api/tickets");
+    if (res.status === 401) return signOut("Your session ended. Please sign in again.");
+    const data = await res.json();
+    const list = $("tickets");
+    list.innerHTML = "";
+    if (!data.tickets.length) {
+      list.innerHTML = '<li class="empty-note">No tickets yet.</li>';
+      return;
+    }
+    for (const t of data.tickets.slice(0, 12)) {
+      const li = document.createElement("li");
+      li.className = "ticket";
+      const owner = me.role === "it_admin" ? ` from ${esc(t.owner_id)}` : "";
+      li.innerHTML = `<div class="ticket-top"><span>${esc(t.ticket_no)}</span><span class="pill ${t.priority === "high" ? "high" : ""}">${esc(t.priority)}</span></div>
+        <p>${esc(t.summary)}</p><span class="pill">${esc(t.status.replace(/_/g, " "))}${owner}</span>`;
+      list.appendChild(li);
+    }
+  } catch (e) { /* the list simply stays as it was */ }
+}
+
+/* ---------- Chat ---------- */
+function addMessage(role) {
+  $("welcome").hidden = true;
+  const row = document.createElement("div");
+  row.className = "msg " + (role === "user" ? "user" : "bot");
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  if (role === "bot") {
+    const av = document.createElement("div");
+    av.className = "avatar";
+    av.innerHTML = '<svg viewBox="0 0 32 32" fill="none"><path d="M16 4 6 8v7c0 6.5 4.2 11.2 10 13 5.8-1.8 10-6.5 10-13V8L16 4Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m11.5 16 3.2 3.2 6-6.4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    row.appendChild(av);
+  }
+  row.appendChild(bubble);
+  $("thread-inner").appendChild(row);
+  scrollDown();
+  return bubble;
+}
+function scrollDown() { const t = $("thread"); t.scrollTop = t.scrollHeight; }
+
+function setBusy(on) {
+  busy = on;
+  const btn = $("send-btn");
+  btn.textContent = on ? "Stop" : "Send";
+  btn.type = on ? "button" : "submit";
+  $("input").disabled = on;
+}
+
+async function send(text) {
+  text = text.trim();
+  if (!text || busy) return;
+  if (text.length > MAX_CHARS) return;
+  $("input").value = "";
+  autoGrow();
+  addMessage("user").textContent = text;
+  const bubble = addMessage("bot");
+  bubble.innerHTML = '<span class="typing" aria-label="The agent is typing"><i></i><i></i><i></i></span>';
+  const turn = { title: text.length > 60 ? text.slice(0, 57) + "..." : text, sources: [], actions: [] };
+  turns.unshift(turn);
+  turns = turns.slice(0, 8);
+  renderActivity();
+
+  let reply = "";
+  let result = null;
+  controller = new AbortController();
+  setBusy(true);
+  try {
+    await streamChat(text, (ev) => {
+      if (ev.type === "sources") { turn.sources = ev.sources; renderActivity(); }
+      else if (ev.type === "action") { turn.actions.push(ev); renderActivity(); }
+      else if (ev.type === "token") { reply += ev.text; bubble.innerHTML = render(reply) + '<span class="caret"></span>'; scrollDown(); }
+      else if (ev.type === "done") { result = ev.result; }
+    }, controller.signal);
+  } catch (err) {
+    if (err.name === "AbortError") {
+      reply += reply ? "\n\n(Stopped.)" : "(Stopped.)";
+    } else if (err.status === 401) {
+      return signOut("Your session ended. Please sign in again.");
+    } else {
+      reply = err.status ? err.message : "Could not reach the server. Check that it is still running, then try again.";
+    }
+  } finally {
+    controller = null;
+    setBusy(false);
+  }
+  bubble.innerHTML = render(reply || "(No reply.)");
+  if (result) {
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    if (result.escalated) meta.innerHTML += '<span class="badge">Handed to a person</span>';
+    meta.innerHTML += `<span>${(result.latency_ms / 1000).toFixed(1)} s</span>`;
+    bubble.appendChild(meta);
+  }
+  scrollDown();
+  $("input").focus();
+  if (turn.actions.length) loadTickets();
+}
+
+async function streamChat(text, onEvent, signal) {
+  const res = await api("/api/chat", { method: "POST", signal, body: JSON.stringify({ message: text, session_id: sessionId }) });
+  if (!res.ok) {
+    const err = new Error(await errorText(res));
+    err.status = res.status;
+    throw err;
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let end;
+    while ((end = buffer.indexOf("\n\n")) >= 0) {
+      const block = buffer.slice(0, end);
+      buffer = buffer.slice(end + 2);
+      const line = block.split("\n").find((l) => l.startsWith("data: "));
+      if (line) { try { onEvent(JSON.parse(line.slice(6))); } catch (e) { /* skip a broken event */ } }
+    }
+  }
+}
+
+/* ---------- Agent activity panel ---------- */
+function renderActivity() {
+  const box = $("activity");
+  if (!turns.length) {
+    box.innerHTML = '<p class="empty-note">Nothing yet. Send a message to see the policies it used and the rule decisions.</p>';
+    return;
+  }
+  box.innerHTML = turns.map((t) => {
+    const sources = t.sources.length
+      ? t.sources.map((s) => `<div class="src"><b>${esc(s.doc_id)}</b> ${esc(s.title)}<span>${esc(s.section)}</span></div>`).join("")
+      : '<p class="empty-note">No matching policy found.</p>';
+    const gates = t.actions.length
+      ? t.actions.map((a) => `<div class="gate"><i class="dot ${esc(a.verdict)}"></i><div>
+          <b>${esc(ACTION_NAMES[a.action] || a.action)}</b>
+          <span class="verdict ${esc(a.verdict)}">${esc(VERDICT_NAMES[a.verdict] || a.verdict)}</span>
+          <small>Rule: ${esc(a.rule)}</small></div></div>`).join("")
+      : '<p class="empty-note">No actions were proposed.</p>';
+    return `<div class="turn"><div class="turn-title">${esc(t.title)}</div>
+      <h3>Policies consulted</h3>${sources}<h3>Rule decisions</h3>${gates}</div>`;
+  }).join("");
+}
+
+/* ---------- Input behaviour ---------- */
+function autoGrow() {
+  const el = $("input");
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  const n = el.value.length;
+  const counter = $("counter");
+  counter.textContent = n > MAX_CHARS - 200 ? `${n} / ${MAX_CHARS}` : "";
+  counter.className = n > MAX_CHARS ? "over" : "";
+}
+$("input").addEventListener("input", autoGrow);
+$("input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send($("input").value); }
+});
+$("composer").addEventListener("submit", (e) => { e.preventDefault(); send($("input").value); });
+$("send-btn").addEventListener("click", () => { if (busy && controller) controller.abort(); });
+
+for (const s of SUGGESTIONS) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = s;
+  b.addEventListener("click", () => { closeDrawers(); send(s); });
+  $("suggest").appendChild(b);
+}
+
+/* ---------- Sign-in ---------- */
+$("demo-list").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-emp]");
+  if (!b) return;
+  $("emp").value = b.dataset.emp;
+  $("pw").value = "Demo@12345!"; // demo accounts only
+  $("pw").focus();
+});
+$("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("login-error").textContent = "";
+  $("login-btn").disabled = true;
+  try {
+    const res = await api("/api/login", { method: "POST", body: JSON.stringify({ employee_id: $("emp").value, password: $("pw").value }) });
+    if (!res.ok) { $("login-error").textContent = await errorText(res); return; }
+    const data = await res.json();
+    token = data.access_token;
+    me = data.user;
+    sessionStorage.setItem(TOKEN_KEY, token);
+    $("pw").value = "";
+    showApp();
+  } catch (err) {
+    $("login-error").textContent = "Could not reach the server. Check that it is running, then try again.";
+  } finally {
+    $("login-btn").disabled = false;
+  }
+});
+$("signout-btn").addEventListener("click", () => signOut(""));
+
+/* ---------- Theme and drawers ---------- */
+function applyTheme(t) { if (t) document.documentElement.dataset.theme = t; }
+applyTheme(localStorage.getItem("theme"));
+$("theme-btn").addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark";
+  applyTheme(next);
+  localStorage.setItem("theme", next);
+});
+function closeDrawers() {
+  $("rail-left").classList.remove("open");
+  $("rail-right").classList.remove("open");
+  $("scrim").classList.remove("on");
+}
+function openDrawer(id) { closeDrawers(); $(id).classList.add("open"); $("scrim").classList.add("on"); }
+$("menu-btn").addEventListener("click", () => openDrawer("rail-left"));
+$("activity-btn").addEventListener("click", () => openDrawer("rail-right"));
+$("scrim").addEventListener("click", closeDrawers);
+
+/* ---------- Sections: Chat, Approvals, Dashboard, Audit log ---------- */
+const VIEWS = {
+  chat: { label: "Chat", roles: ["employee", "manager", "it_admin"] },
+  approvals: { label: "Approvals", roles: ["manager", "it_admin"] },
+  dashboard: { label: "Dashboard", roles: ["it_admin"] },
+  audit: { label: "Audit log", roles: ["it_admin"] },
+};
+let view = "chat";
+let approvalTab = "waiting";
+let dashDays = 7;
+
+function buildNav() {
+  const nav = $("subnav");
+  nav.innerHTML = "";
+  const allowed = Object.entries(VIEWS).filter(([, v]) => v.roles.includes(me.role));
+  nav.hidden = allowed.length < 2;
+  for (const [key, v] of allowed) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab";
+    b.dataset.view = key;
+    b.innerHTML = esc(v.label) + (key === "approvals" ? '<span class="count" id="approvals-count" hidden></span>' : "");
+    b.addEventListener("click", () => setView(key));
+    nav.appendChild(b);
+  }
+}
+function setView(key) {
+  view = key;
+  $("app").dataset.view = key;
+  closeDrawers();
+  for (const b of $("subnav").querySelectorAll(".tab")) b.setAttribute("aria-current", b.dataset.view === key ? "page" : "false");
+  for (const id of ["approvals", "dashboard", "audit"]) $("page-" + id).hidden = id !== key;
+  if (key === "approvals") loadApprovals();
+  else if (key === "dashboard") loadDashboard();
+  else if (key === "audit") loadAudit();
+  else $("input").focus();
+}
+function setCount(n) {
+  const el = $("approvals-count");
+  if (!el) return;
+  el.textContent = n;
+  el.hidden = !n;
+}
+async function guarded(path, options) {
+  const res = await api(path, options);
+  if (res.status === 401) { signOut("Your session ended. Please sign in again."); return null; }
+  return res;
+}
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/* ----- Approvals ----- */
+async function refreshApprovalCount() {
+  if (!me || !VIEWS.approvals.roles.includes(me.role)) return;
+  try {
+    const res = await api("/api/approvals?view=waiting");
+    if (res.ok) setCount((await res.json()).waiting_count);
+  } catch (e) { /* ignore */ }
+}
+function stepText(s) {
+  if (s.state === "approved") return `Approved by ${s.by}${s.note ? ": " + s.note : ""}`;
+  if (s.state === "rejected") return `Rejected by ${s.by}${s.note ? ": " + s.note : ""}`;
+  if (s.state === "waiting") return "Opens after the line manager approves";
+  if (s.state === "closed") return "Closed";
+  return "Waiting for a decision";
+}
+function approvalCard(a) {
+  const steps = a.steps.map((s) => `<li class="step ${esc(s.state)}"><b>${esc(s.step)}</b><span>${esc(stepText(s))}</span></li>`).join("");
+  const controls = a.available.length
+    ? `<div class="decide"><input class="note" maxlength="200" placeholder="Add a note (optional)" aria-label="Note for this decision">
+        ${a.available.map((step) => `<div class="decide-row"><small>${esc(step)}</small>
+          <button class="btn btn-primary" type="button" data-id="${a.id}" data-step="${esc(step)}" data-decision="approve">Approve</button>
+          <button class="btn btn-danger" type="button" data-id="${a.id}" data-step="${esc(step)}" data-decision="reject">Reject</button></div>`).join("")}
+        <p class="card-error" role="alert"></p></div>`
+    : "";
+  return `<article class="acard"><div class="acard-top"><h3>${esc(a.resource)}${a.sensitive ? ' <span class="status-pill pending">Sensitive</span>' : ""}</h3>
+      <span class="status-pill ${esc(a.status)}">${esc(cap(a.status))}</span></div>
+    <div class="who-line">${esc(a.requester_name)} (${esc(a.requester_id)}), ticket ${esc(a.ticket_no)}, ${esc(fmtTime(a.created_at))}</div>
+    <p class="reason">${esc(a.reason || "No reason given.")}</p>
+    <ul class="steps">${steps}</ul>${controls}</article>`;
+}
+async function loadApprovals() {
+  $("approvals-sub").textContent = me.role === "it_admin"
+    ? "Sensitive requests need a line manager, a system owner and a security review, each a different person."
+    : "Requests from the people who report to you.";
+  for (const b of $("approvals-seg").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.tab === approvalTab));
+  const box = $("approvals-list");
+  const res = await guarded(`/api/approvals?view=${approvalTab}`);
+  if (!res) return;
+  if (!res.ok) { box.innerHTML = `<p class="empty-note">${esc(await errorText(res))}</p>`; return; }
+  const data = await res.json();
+  setCount(data.waiting_count);
+  box.innerHTML = data.items.length
+    ? data.items.map(approvalCard).join("")
+    : `<p class="empty-note">${approvalTab === "waiting" ? "Nothing is waiting for you right now." : "No past decisions yet."}</p>`;
+}
+$("approvals-seg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-tab]");
+  if (b) { approvalTab = b.dataset.tab; loadApprovals(); }
+});
+$("approvals-list").addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-decision]");
+  if (!b) return;
+  const card = b.closest(".acard");
+  const err = card.querySelector(".card-error");
+  err.textContent = "";
+  card.querySelectorAll("button").forEach((x) => (x.disabled = true));
+  const res = await guarded(`/api/approvals/${b.dataset.id}/decision`, {
+    method: "POST",
+    body: JSON.stringify({ step: b.dataset.step, decision: b.dataset.decision, note: card.querySelector(".note").value }),
+  });
+  if (!res) return;
+  if (!res.ok) {
+    err.textContent = await errorText(res);
+    card.querySelectorAll("button").forEach((x) => (x.disabled = false));
+    return;
+  }
+  loadApprovals();
+  loadTickets();
+});
+
+/* ----- Dashboard ----- */
+const VERDICT_COLORS = { allow: "var(--allowed)", needs_verification: "var(--verify)", needs_approval: "var(--approval)", refuse: "var(--blocked)" };
+const pctText = (v) => (v === null || v === undefined ? "n/a" : v + "%");
+
+function barChart(rows) {
+  const max = Math.max(1, ...rows.map((r) => r.count));
+  return `<div class="bars" role="img" aria-label="Conversations per day">${rows.map((r, i) => {
+    const h = Math.round((r.count / max) * 100);
+    const label = new Date(r.date + "T00:00:00").toLocaleDateString([], { day: "numeric", month: "short" });
+    const show = rows.length <= 14 || i % 3 === 0;
+    return `<div class="bar-col"><em>${r.count || ""}</em><div class="bar" style="height:${h}%"></div><small>${show ? esc(label) : "&nbsp;"}</small></div>`;
+  }).join("")}</div>`;
+}
+function rankList(rows, key, emptyText) {
+  if (!rows.length) return `<p class="empty-note">${emptyText}</p>`;
+  const max = Math.max(...rows.map((r) => r.count));
+  return `<div class="rank">${rows.map((r) => `<div class="rank-row"><div><span>${esc(String(r[key]))}</span><b>${r.count}</b></div>
+    <div class="track"><div class="fill" style="width:${Math.round((r.count / max) * 100)}%"></div></div></div>`).join("")}</div>`;
+}
+function ticketTable(tickets) {
+  if (!tickets.length) return '<p class="empty-note">No tickets yet.</p>';
+  const editable = (s) => !["pending_approval", "rejected"].includes(s);
+  const opts = ["open", "in_progress", "resolved"];
+  return `<table><thead><tr><th>Ticket</th><th>From</th><th>Summary</th><th>Priority</th><th>Status</th></tr></thead><tbody>${tickets.slice(0, 25).map((t) => `
+    <tr><td><b>${esc(t.ticket_no)}</b></td><td>${esc(t.owner_id)}</td><td>${esc(t.summary)}</td>
+    <td><span class="pill ${t.priority === "high" ? "high" : ""}">${esc(t.priority)}</span></td>
+    <td>${editable(t.status)
+      ? `<select data-ticket="${esc(t.ticket_no)}" aria-label="Status of ${esc(t.ticket_no)}">${[...new Set([t.status, ...opts])].map((o) => `<option value="${esc(o)}" ${o === t.status ? "selected" : ""} ${opts.includes(o) ? "" : "disabled"}>${esc(o.replace(/_/g, " "))}</option>`).join("")}</select>`
+      : `<span class="muted">${esc(t.status.replace(/_/g, " "))}</span>`}</td></tr>`).join("")}</tbody></table>`;
+}
+async function loadDashboard() {
+  for (const b of $("dash-seg").querySelectorAll("button")) b.setAttribute("aria-pressed", String(Number(b.dataset.days) === dashDays));
+  const [mRes, tRes] = await Promise.all([guarded(`/api/admin/metrics?days=${dashDays}`), guarded("/api/tickets")]);
+  if (!mRes || !tRes) return;
+  const box = $("dash-body");
+  if (!mRes.ok) { box.innerHTML = `<p class="empty-note">${esc(await errorText(mRes))}</p>`; return; }
+  const m = await mRes.json();
+  const tickets = (await tRes.json()).tickets;
+  const v = m.verdicts, total = Object.values(v).reduce((a, b) => a + b, 0);
+  const stack = total
+    ? `<div class="stack">${Object.keys(VERDICT_COLORS).map((k) => `<i style="width:${((v[k] || 0) / total) * 100}%;background:${VERDICT_COLORS[k]}"></i>`).join("")}</div>`
+    : "";
+  const legend = Object.keys(VERDICT_COLORS).map((k) => `<div><i class="dot" style="background:${VERDICT_COLORS[k]}"></i>${esc(VERDICT_NAMES[k])}<b>${v[k] || 0}</b></div>`).join("");
+  box.innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><span>Conversations</span><strong>${m.turns}</strong><small>${m.escalated_turns} handed to a person</small></div>
+      <div class="kpi"><span>Handled without a person</span><strong>${pctText(m.handled_without_person_pct)}</strong><small>Share of conversations not escalated</small></div>
+      <div class="kpi"><span>Answers backed by policy</span><strong>${pctText(m.grounded_pct)}</strong><small>Conversations with a policy source</small></div>
+      <div class="kpi"><span>Actions blocked by rules</span><strong>${v.refuse || 0}</strong><small>${m.failed_logins} failed sign-ins in this period</small></div>
+      <div class="kpi"><span>Average response time</span><strong>${m.avg_latency_ms === null ? "n/a" : (m.avg_latency_ms / 1000).toFixed(1) + " s"}</strong><small>${m.p95_latency_ms === null ? "No data yet" : "Slowest 5%: " + (m.p95_latency_ms / 1000).toFixed(1) + " s"}</small></div>
+      <div class="kpi"><span>Approvals waiting</span><strong>${m.pending_approvals}</strong><small>Across all requests</small></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>Conversations per day</h3><p class="hint">Days shown in UTC.</p>${barChart(m.per_day)}</div>
+      <div class="panel"><h3>What the rules decided</h3><p class="hint">Every action the agent proposed.</p>${stack}<div class="legend">${legend}</div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>Most used policies</h3><p class="hint">Documents the agent drew on.</p>${rankList(m.top_sources, "doc_id", "No policies used in this period.")}</div>
+      <div class="panel"><h3>Blocked actions by rule</h3><p class="hint">Why requests were refused.</p>${rankList(m.blocked_by_rule, "rule", "Nothing was blocked in this period.")}</div>
+    </div>
+    <div class="panel"><h3>Tickets</h3><p class="hint">Change the status of a ticket here. Access requests are controlled by Approvals.</p><div class="tablewrap">${ticketTable(tickets)}</div></div>`;
+}
+$("dash-seg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-days]");
+  if (b) { dashDays = Number(b.dataset.days); loadDashboard(); }
+});
+$("dash-body").addEventListener("change", async (e) => {
+  const sel = e.target.closest("select[data-ticket]");
+  if (!sel) return;
+  const res = await guarded(`/api/admin/tickets/${sel.dataset.ticket}`, { method: "PATCH", body: JSON.stringify({ status: sel.value }) });
+  if (res && !res.ok) { alert(await errorText(res)); }
+  loadDashboard();
+  loadTickets();
+});
+
+/* ----- Audit log ----- */
+const EVENT_GROUPS = {
+  chat: ["chat_turn", "message_rejected"],
+  action: ["action_decision", "password_reset_link_issued"],
+  approval: ["approval_decision", "ticket_status_changed"],
+  login: ["login_success", "login_failed"],
+  problem: ["login_failed", "model_error", "message_rejected"],
+};
+const EVENT_NAMES = {
+  chat_turn: "Conversation", action_decision: "Rule decision", approval_decision: "Approval", ticket_status_changed: "Ticket changed",
+  login_success: "Signed in", login_failed: "Failed sign-in", model_error: "AI service error", message_rejected: "Message rejected",
+  password_reset_link_issued: "Reset link issued",
+};
+function auditSummary(e) {
+  const d = e.detail || {};
+  switch (e.event) {
+    case "chat_turn": {
+      const acts = (d.actions || []).map((a) => `${ACTION_NAMES[a.action] || a.action}: ${VERDICT_NAMES[a.verdict] || a.verdict}`).join("; ");
+      return `${esc(d.message || "")}<small>Policies: ${esc((d.sources || []).join(", ") || "none")}${acts ? "; " + esc(acts) : ""}</small>`;
+    }
+    case "action_decision": return `${esc(ACTION_NAMES[d.action] || d.action)}: ${esc(VERDICT_NAMES[d.verdict] || d.verdict)}<small>Rule: ${esc(d.rule || "")}</small>`;
+    case "approval_decision": return `${esc(d.ticket_no)}: ${esc(d.step)} ${esc(d.decision)}<small>Request is now ${esc(d.result)}</small>`;
+    case "ticket_status_changed": return `${esc(d.ticket_no)}: ${esc(String(d.from).replace(/_/g, " "))} to ${esc(String(d.to).replace(/_/g, " "))}`;
+    case "login_success": case "login_failed": return `From ${esc(d.ip || "unknown address")}`;
+    case "message_rejected": return `Reason: ${esc(d.reason || "")}`;
+    case "model_error": return `${esc(d.error || "")}`;
+    default: return esc(JSON.stringify(d)).slice(0, 160);
+  }
+}
+let auditEvents = [];
+function renderAudit() {
+  const f = $("audit-filter").value;
+  const rows = f === "all" ? auditEvents : auditEvents.filter((e) => (EVENT_GROUPS[f] || []).includes(e.event));
+  $("audit-body").innerHTML = rows.length
+    ? `<table><thead><tr><th>Time</th><th>User</th><th>Event</th><th>Details</th></tr></thead><tbody>${rows.map((e) => `<tr><td class="muted">${esc(fmtTime(e.ts))}</td><td>${esc(e.employee_id || "")}</td>
+        <td class="event">${esc(EVENT_NAMES[e.event] || e.event)}</td><td class="audit-sum">${auditSummary(e)}</td></tr>`).join("")}</tbody></table>`
+    : '<p class="empty-note">Nothing to show for this filter.</p>';
+}
+async function loadAudit() {
+  const res = await guarded("/api/admin/audit?limit=300");
+  if (!res) return;
+  if (!res.ok) { $("audit-body").innerHTML = `<p class="empty-note">${esc(await errorText(res))}</p>`; return; }
+  auditEvents = (await res.json()).events;
+  renderAudit();
+}
+$("audit-filter").addEventListener("change", renderAudit);
+$("audit-refresh").addEventListener("click", loadAudit);
+setInterval(() => { if (!$("app").hidden) refreshApprovalCount(); }, 30000);
+
+/* ---------- Start ---------- */
+
+(async function start() {
+  if (!token) return showLogin("");
+  try {
+    const res = await api("/api/me");
+    if (!res.ok) throw new Error("expired");
+    me = await res.json();
+    showApp();
+  } catch (e) {
+    sessionStorage.removeItem(TOKEN_KEY);
+    token = null;
+    showLogin("");
+  }
+})();
+</script>
+</body>
+</html>

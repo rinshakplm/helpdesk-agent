@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: nimbus-helpdesk-agent
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # you paste this in the Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # Render creates a strong random value
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+      - key: DAILY_CHAT_CAP
+        value: "200"
